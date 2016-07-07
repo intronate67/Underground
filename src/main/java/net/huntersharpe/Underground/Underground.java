@@ -23,7 +23,6 @@
 */
 package net.huntersharpe.Underground;
 
-import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -31,12 +30,15 @@ import org.spongepowered.api.Game;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.DefaultConfig;
+import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Plugin(id="underground", name="Underground", version="1.0")
 public class Underground {
@@ -46,6 +48,8 @@ public class Underground {
     public static Underground getUnderground(){
         return underground;
     }
+
+    public List<String> ugWorlds = new ArrayList<>();
 
     @Inject
     @DefaultConfig(sharedRoot = true)
@@ -58,21 +62,25 @@ public class Underground {
     public CommentedConfigurationNode configurationNode = null;
 
     @Inject
-    Game game;
+    public Game game;
 
-    @Subscribe
+    @Listener
     public void onPreInit(GamePreInitializationEvent e){
         try {
             if(!configuration.exists()){
-
                 configuration.createNewFile();
                 configurationNode = configurationLoader.load();
-                configurationNode.getNode("rlgl", "arenas").setComment("Do not edit these values, All information stored about arenas is saved below.");
+                configurationNode.getNode("worlds").setComment("Please do not edit the values directly!");
                 configurationLoader.save(configurationNode);
             }
             configurationNode = configurationLoader.load();
         } catch (IOException ioException) {
             ioException.printStackTrace();
+        }
+        for(String world : configurationNode.getNode("worlds")
+                .getChildrenList().toArray(new String[configurationNode.getChildrenList().size()])){
+            ugWorlds.add(world);
+            System.out.print("Underground world:" + world + "found in config!");
         }
         game.getCommandManager().register(this, undergroundSpec, "underground");
     }
@@ -82,8 +90,9 @@ public class Underground {
             .arguments(GenericArguments.seq(
                         GenericArguments.string(Text.of("name")),
                         GenericArguments.string(Text.of("type")),
-                        GenericArguments.integer(Text.of("regen-time"))),
-                    GenericArguments.optional(GenericArguments.string(Text.of("world-name")))
+                        GenericArguments.integer(Text.of("regen-time")),
+                        GenericArguments.optional(GenericArguments.string(Text.of("world-name")))
+                )
             )
             .executor(new UGAdd())
             .build();
@@ -95,11 +104,7 @@ public class Underground {
             .arguments(GenericArguments.seq(
                     GenericArguments.string(Text.of("name")),
                     GenericArguments.string(Text.of("value")),
-                    GenericArguments.flags().flag("rt", "t", "q").buildWith(GenericArguments.seq(
-                            GenericArguments.string(Text.of("name")),
-                            GenericArguments.string(Text.of("value")),
-                            GenericArguments.optional(GenericArguments.string(Text.of("operation")))
-                    )),
+                    GenericArguments.string(Text.of("type")),
                     GenericArguments.optional(GenericArguments.string(Text.of("operation")))
             ))
             .executor(new UGEdit())

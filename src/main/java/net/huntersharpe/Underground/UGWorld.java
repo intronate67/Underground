@@ -23,30 +23,60 @@
 */
 package net.huntersharpe.Underground;
 
-import org.spongepowered.api.command.CommandException;
-import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.CommandContext;
-import org.spongepowered.api.command.spec.CommandExecutor;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
-public class UndergroundCommand implements CommandExecutor{
-    @Override
-    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        src.sendMessage(Text.of(
-                TextColors.GRAY,
-                "--------[",
-                TextColors.BLUE,
-                "Underground",
-                TextColors.GRAY,
-                "]--------\n",
-                TextColors.BLUE,
-                "Created by: intronate67\n",
-                TextColors.BLUE,
-                "Usage: /ug [add|edit|join|list|remove]"
-        ));
-        WorldController.getWorldController().test(src);
-        return CommandResult.success();
+public class UGWorld {
+
+    private String name;
+    private UUID id;
+    private int regenTime;
+    private int maxSize;
+    private String tgug;
+    private  List<UUID> players = new ArrayList<>();
+
+    public UGWorld(String name, UUID id, int regenTime, int maxSize, String tgug){
+        this.name = name;
+        this.id = id;
+        this.regenTime = regenTime;
+        this.maxSize = maxSize;
+        this.tgug = tgug;
+    }
+
+    public String getName(){
+        return this.name;
+    }
+
+    public UUID getId(){
+        return this.id;
+    }
+
+    public int getRegenTime(){
+        return this.regenTime;
+    }
+
+    public int getMaxSize(){
+        return this.maxSize;
+    }
+
+    public String getTgug(){
+        return this.tgug;
+    }
+
+    public List<UUID> getPlayers(){
+        return this.players;
+    }
+
+    public void setRegenTime(int regenTime){
+        this.regenTime = regenTime;
+    }
+
+    public void setMaxSize(int maxSize){
+        this.maxSize = maxSize;
+    }
+
+    public void setTgug(String tgug){
+        this.tgug = tgug;
     }
 }

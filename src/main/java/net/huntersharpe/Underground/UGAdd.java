@@ -23,6 +23,7 @@
 */
 package net.huntersharpe.Underground;
 
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -43,8 +44,8 @@ public class UGAdd implements CommandExecutor {
         //Custom world command
         String name = args.<String>getOne("name").get();
         Integer regenTime = args.<Integer>getOne("regen-time").get();
-        if(Underground.getUnderground().rootNode().getChildrenList().contains(name)){
-            src.sendMessage(Text.of(TextColors.RED, name, " already exists in the config!"));
+        if(Sponge.getServer().getWorlds().contains(name)){
+            src.sendMessage(Text.of(TextColors.RED, name, " is an already existing world!"));
             return CommandResult.success();
         }
         if(args.hasAny(Text.of("world-name"))){

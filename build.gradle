@@ -1,5 +1,10 @@
+plugins {
+    id 'org.spongepowered.plugin' version '0.6'
+}
+
 group 'net.huntersharpe.Underground'
-version '1.0-SNAPSHOT'
+version = '1.0-SNAPSHOT'
+description = 'Underground'
 
 apply plugin: 'java'
 
@@ -15,5 +20,5 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
-    compile "org.spongepowered:spongeapi:4.0.0"
+    compile "org.spongepowered:spongeapi:4.1.0"
 }
