@@ -56,11 +56,11 @@ public class UGAdd implements CommandExecutor {
             //Type custom
             String worldName = args.<String>getOne("world-name").get();
             WorldController.getWorldController().createWorld(name, regenTime, worldName);
-            src.sendMessage(Text.of(TextColors.GREEN, name, " has been created!"));
+            src.sendMessage(Text.of(TextColors.GREEN, "Underground world", name, " has been created!"));
             return CommandResult.success();
         }
         WorldController.getWorldController().createWorld(name, regenTime);
-        src.sendMessage(Text.of(TextColors.GREEN, name, " has been created!"));
+        src.sendMessage(Text.of(TextColors.GREEN, "Underground world", name, " has been created!"));
         return CommandResult.success();
     }
 }
