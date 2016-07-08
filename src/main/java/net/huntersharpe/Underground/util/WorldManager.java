@@ -21,34 +21,25 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
 */
-package net.huntersharpe.Underground;
+package net.huntersharpe.Underground.util;
 
+import net.huntersharpe.Underground.UGWorld;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.WorldCreationSettings;
 import org.spongepowered.api.world.storage.WorldProperties;
 
 import java.util.*;
 
-public class WorldController {
+public class WorldManager {
 
     private static List<UGWorld> worlds = new ArrayList<>();
 
-    public static WorldController worldController = new WorldController();
-
-    public static WorldController getWorldController(){
-        return worldController;
-    }
-
     private Map<UUID, Date> time = new HashMap<>();
 
-    private CommentedConfigurationNode config = Underground.getUnderground().rootNode().getNode("worlds");
+    private ConfigManager manager = new ConfigManager();
 
-    public void test(CommandSource src){
-        src.sendMessage(Text.of("Test"));
-    }
+    private CommentedConfigurationNode config = manager.getConfig();
 
     public void createWorld(String name, int regenTime){
         WorldCreationSettings.Builder builder = WorldCreationSettings.builder().name(name);
@@ -57,12 +48,15 @@ public class WorldController {
         WorldProperties properties = optionalProperties.get();
         Sponge.getServer().saveWorldProperties(properties);
         Sponge.getServer().loadWorld(name);
-        UGWorld ug = new UGWorld(name, UUID.randomUUID(), regenTime, 50, "1d");
+        UUID id = UUID.randomUUID();
+        UGWorld ug = new UGWorld(name, regenTime, 50, "1d");
         worlds.add(ug);
         config.getNode(name, "type").setValue("original");
-        config.getNode(name, "custom-world").setValue(null);
+        config.getNode(name, "custom-world").setValue(false);
         config.getNode(name, "regen-time").setValue(regenTime);
         config.getNode(name, "tgug").setValue("1d");
+        config.getNode(name, "max-size").setValue(100);
+        manager.save();
     }
 
     public void createWorld(String name, int regenTime, String customWorld){
@@ -73,17 +67,20 @@ public class WorldController {
         WorldProperties properties = optionalProperties.get();
         Sponge.getServer().saveWorldProperties(properties);
         Sponge.getServer().loadWorld(name);
-        UGWorld ug = new UGWorld(name, UUID.randomUUID(), regenTime, 50, "1d");
+        UGWorld ug = new UGWorld(name, regenTime, 50, "1d");
         worlds.add(ug);
         config.getNode(name, "type").setValue("custom");
         config.getNode(name, "custom-world").setValue(customWorld);
         config.getNode(name, "regen-time").setValue(regenTime);
         config.getNode(name, "tgug").setValue("1d");
+        config.getNode(name, "max-size").setValue(100);
+        manager.save();
     }
 
     public void removeWorld(String name){
         Sponge.getServer().deleteWorld(Sponge.getServer().getWorldProperties(name).get());
         config.removeChild(name);
+        manager.save();
     }
 
     public void transition(String name){
@@ -95,9 +92,9 @@ public class WorldController {
         time.put(pUUID, Calendar.getInstance().getTime());
     }
 
-    public UGWorld getUGWold(UUID id){
-        for(UGWorld ug : this.worlds){
-            if(ug.getId().equals(ug)){
+    public UGWorld getUGWold(String name){
+        for(UGWorld ug : worlds) {
+            if (ug.getName().equals(name)) {
                 return ug;
             }
         }

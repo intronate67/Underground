@@ -30,15 +30,13 @@ import java.util.UUID;
 public class UGWorld {
 
     private String name;
-    private UUID id;
     private int regenTime;
     private int maxSize;
     private String tgug;
     private  List<UUID> players = new ArrayList<>();
 
-    public UGWorld(String name, UUID id, int regenTime, int maxSize, String tgug){
+    public UGWorld(String name, int regenTime, int maxSize, String tgug){
         this.name = name;
-        this.id = id;
         this.regenTime = regenTime;
         this.maxSize = maxSize;
         this.tgug = tgug;
@@ -46,10 +44,6 @@ public class UGWorld {
 
     public String getName(){
         return this.name;
-    }
-
-    public UUID getId(){
-        return this.id;
     }
 
     public int getRegenTime(){

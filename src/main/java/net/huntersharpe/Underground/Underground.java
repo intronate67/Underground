@@ -24,26 +24,35 @@
 package net.huntersharpe.Underground;
 
 import com.google.inject.Inject;
+import net.huntersharpe.Underground.commands.*;
+import net.huntersharpe.Underground.util.ConfigManager;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
+import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
+import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
 
-import java.io.File;
+
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 @Plugin(id="underground", name="Underground", version="1.0")
 public class Underground {
 
-    public static Underground underground = new Underground();
+    private static Underground underground;
 
     public static Underground getUnderground(){
         return underground;
@@ -52,39 +61,50 @@ public class Underground {
     public List<String> ugWorlds = new ArrayList<>();
 
     @Inject
-    @DefaultConfig(sharedRoot = true)
-    private File configuration = null;
-
-    @Inject
-    @DefaultConfig(sharedRoot = true)
-    public ConfigurationLoader<CommentedConfigurationNode> configurationLoader = null;
-
-    public CommentedConfigurationNode configurationNode = null;
+    @ConfigDir(sharedRoot = false)
+    private Path configDir;
 
     @Inject
     public Game game;
 
+    private ConfigManager manager = new ConfigManager();
+
+
     @Listener
     public void onPreInit(GamePreInitializationEvent e){
-        try {
-            if(!configuration.exists()){
-                configuration.createNewFile();
-                configurationNode = configurationLoader.load();
-                configurationNode.getNode("worlds").setComment("Please do not edit the values directly!");
-                configurationLoader.save(configurationNode);
+        underground = this;
+        if (!Files.exists(configDir)){
+            if (Files.exists(configDir.resolveSibling("underground"))){
+                try{
+                    Files.move(configDir.resolveSibling("underground"), configDir);
+                }catch (IOException ex){
+                    ex.printStackTrace();
+                }
+            }else{
+                try{
+                    Files.createDirectories(configDir);
+                }catch (IOException ex){
+                    ex.printStackTrace();
+                }
             }
-            configurationNode = configurationLoader.load();
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
         }
-        for(String world : configurationNode.getNode("worlds")
-                .getChildrenList().toArray(new String[configurationNode.getChildrenList().size()])){
+        for(String world : manager.getConfig()
+                .getChildrenList().toArray(new String[manager.getConfig().getChildrenList().size()])){
             ugWorlds.add(world);
             System.out.print("Underground world:" + world + "found in config!");
         }
+    }
+
+    @Listener
+    public void onInit(GameInitializationEvent e){
+        manager.main();
         game.getCommandManager().register(this, undergroundSpec, "underground");
     }
 
+    @Listener
+    public void onStop(GameStoppingEvent e){
+        manager.save();
+    }
 
     CommandSpec addSpec = CommandSpec.builder()
             .arguments(GenericArguments.seq(
@@ -126,8 +146,8 @@ public class Underground {
             .executor(new UndergroundCommand())
             .build();
 
-    public CommentedConfigurationNode rootNode(){
-        return configurationNode;
+    public Path getPath(){
+        return configDir;
     }
 
     public Game getGame(){

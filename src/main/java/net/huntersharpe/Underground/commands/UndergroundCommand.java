@@ -21,9 +21,10 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
 */
-package net.huntersharpe.Underground;
+package net.huntersharpe.Underground.commands;
 
-import org.spongepowered.api.Sponge;
+import net.huntersharpe.Underground.util.ConfigManager;
+import net.huntersharpe.Underground.util.WorldManager;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -32,15 +33,22 @@ import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-public class UGRemove implements CommandExecutor {
+public class UndergroundCommand implements CommandExecutor{
+
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        if(!Underground.getUnderground().rootNode().getNode("worlds").getChildrenList().contains(args.<String>getOne("name").get())
-                || !Sponge.getServer().getWorlds().contains(args.<String>getOne("name"))){
-            src.sendMessage(Text.of(TextColors.RED, args.<String>getOne("name"), " does not exist in the config or the server!"));
-            return CommandResult.success();
-        }
-        WorldController.getWorldController().removeWorld(args.<String>getOne("name").get());
+        src.sendMessage(Text.of(
+                TextColors.GRAY,
+                "--------[",
+                TextColors.BLUE,
+                "Underground",
+                TextColors.GRAY,
+                "]--------\n",
+                TextColors.BLUE,
+                "Created by: intronate67\n",
+                TextColors.BLUE,
+                "Usage: /ug [add|edit|join|list|remove]"
+        ));
         return CommandResult.success();
     }
 }

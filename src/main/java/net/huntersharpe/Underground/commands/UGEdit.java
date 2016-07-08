@@ -21,9 +21,11 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
 */
-package net.huntersharpe.Underground;
+package net.huntersharpe.Underground.commands;
 
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import net.huntersharpe.Underground.UGWorld;
+import net.huntersharpe.Underground.util.ConfigManager;
+import net.huntersharpe.Underground.util.WorldManager;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -32,22 +34,24 @@ import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-import java.util.UUID;
-
 public class UGEdit implements CommandExecutor {
 
-    private CommentedConfigurationNode config = Underground.getUnderground().rootNode().getNode("worlds");
+    //TODO: Fix configuration overriding.
+
+    private ConfigManager config = new ConfigManager();
+
+    private WorldManager worldManager = new WorldManager();
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         String name = args.<String>getOne("name").get();
-        if(!config.getChildrenList().contains(name) || !Underground.getUnderground().ugWorlds.contains(name)){
+        if(!config.getConfig().getNode(name).isVirtual()){
             src.sendMessage(Text.of(TextColors.RED, name, " is not a valid UGWorld and/or does not exist in the config."));
             return CommandResult.success();
         }
         String value = args.<String>getOne("value").get();
         //Change regen-time or max size
-        UGWorld world = WorldController.getWorldController().getUGWold((UUID)config.getNode(name).getValue("id"));
+        UGWorld world = worldManager.getUGWold(name);
         String type = args.<String>getOne("type").get();
         //TODO: Update to switch and case.
         if(type.equalsIgnoreCase("regen") || type.equalsIgnoreCase("size")){
@@ -64,10 +68,14 @@ public class UGEdit implements CommandExecutor {
                 case "regen" :
                     src.sendMessage(Text.of(TextColors.GRAY, "Updated regen time successfully!"));
                     world.setRegenTime(n);
+                    config.getConfig().getNode(name + "regen-time").setValue(n);
+                    config.save();
                     break;
                 case "size":
                     src.sendMessage(Text.of(TextColors.GRAY, "Updated maximum size of world time successfully!"));
                     world.setMaxSize(n);
+                    config.getConfig().getNode(name + "max-size").setValue(n);
+                    config.save();
                     break;
             }
             return CommandResult.success();
@@ -80,16 +88,14 @@ public class UGEdit implements CommandExecutor {
                     }
                     world.setTgug(value);
                     src.sendMessage(Text.of(TextColors.GRAY, "Updated the time to get underground successfully!"));
+                    config.getConfig().getNode(name, "tgug").setValue(value);
+                    config.save();
                     break;
                 case "quest":
                     //TODO: Edit config and quest book.
                     break;
             }
-        }else{
-            return CommandResult.success();
         }
-        //Add/remove quests or tgug
-
         return CommandResult.success();
 }
 

@@ -21,8 +21,9 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
 */
-package net.huntersharpe.Underground;
+package net.huntersharpe.Underground.commands;
 
+import net.huntersharpe.Underground.util.WorldManager;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -34,8 +35,17 @@ import org.spongepowered.api.text.format.TextColors;
 
 public class UGAdd implements CommandExecutor {
 
+    //TODO: Figure out player friendly way to write regen-time.
+
+    private WorldManager worldManager = new WorldManager();
+
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+        //TODO: Override sponge missed argument handling.
+        if(!args.hasAny("name") || !args.hasAny("type")){
+            src.sendMessage(Text.of(TextColors.RED, "Usage: /ug add <name> <type> <regen-time> [world-name]"));
+            return CommandResult.success();
+        }
         if(!args.<String>getOne(Text.of("type")).get().equals("original") && !args.<String>getOne(Text.of("type")).get().
                 equals("custom")){
             src.sendMessage(Text.of(TextColors.RED, args.<String>getOne(Text.of("type")).get(), " is not a valid world type!"));
@@ -43,7 +53,7 @@ public class UGAdd implements CommandExecutor {
         }
         //Custom world command
         String name = args.<String>getOne("name").get();
-        Integer regenTime = args.<Integer>getOne("regen-time").get();
+        int regenTime = args.<Integer>getOne("regen-time").get();
         if(Sponge.getServer().getWorlds().contains(name)){
             src.sendMessage(Text.of(TextColors.RED, name, " is an already existing world!"));
             return CommandResult.success();
@@ -56,12 +66,18 @@ public class UGAdd implements CommandExecutor {
             }
             //Type custom
             String worldName = args.<String>getOne("world-name").get();
-            WorldController.getWorldController().createWorld(name, regenTime, worldName);
+            worldManager.createWorld(name, regenTime, worldName);
             src.sendMessage(Text.of(TextColors.GREEN, "Underground world", name, " has been created!"));
             return CommandResult.success();
         }
-        WorldController.getWorldController().createWorld(name, regenTime);
-        src.sendMessage(Text.of(TextColors.GREEN, "Underground world", name, " has been created!"));
+        src.sendMessage(Text.of(TextColors.GRAY, "Creating world ", name, "..."));
+        try {
+            worldManager.createWorld(name, regenTime);
+            src.sendMessage(Text.of(TextColors.GREEN, "Underground world ", name, " has been created!"));
+        }catch (Exception e){
+            e.printStackTrace();
+            src.sendMessage(Text.of(TextColors.RED, "Could not create underground world successfully."));
+        }
         return CommandResult.success();
     }
 }
