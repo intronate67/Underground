@@ -1,87 +1,145 @@
-/*This file is part of Underground, licensed under the MIT License (MIT).
-*
-* Copyright (c) 2016 Hunter Sharpe
-* Copyright (c) contributors
-
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-
-* The above copyright notice and this permission notice shall be included in
-* all copies or substantial portions of the Software.
-
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-* THE SOFTWARE.
-*/
+/*
+ * This file is part of EssentialCmds, licensed under the MIT License (MIT).
+ *
+ * Copyright (c) 2015 - 2015 HassanS6000
+ * Copyright (c) contributors
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package net.huntersharpe.Underground.util;
 
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
 
-import java.io.File;
-import java.io.IOException;
+import java.util.Optional;
 
-public class ConfigManager {
+/**
+ * Handles the detection of {@link NullPointerException} in CommentedConfigurationNode using {@link java.util.Optional}
+ */
+public class ConfigManager
+{
+    public ConfigManager(){
 
-    private File configuration;
-    private ConfigurationLoader<CommentedConfigurationNode> configurationLoader;
-    private CommentedConfigurationNode configurationNode;
-
-    public ConfigManager() {
-        String folder = "config" + File.separator + "underground";
-        if(!new File(folder).isDirectory()) {
-            new File(folder).mkdirs();
-        }
-        configuration = new File(folder, "config.conf");
-        create();
-        load();
-    }
-    public void main(){
-        save();
     }
 
-    public ConfigurationLoader<CommentedConfigurationNode> getLoader() {
-        return configurationLoader;
+    /**
+     * Get boolean {@link Optional} value for CommentedConfigurationNode if it is not null; Otherwise return Optional.empty.
+     *
+     * @param node The node for which the boolean value is needed
+     * @return Optional.empty if null or Optional#of(Boolean) if not
+     */
+    public Optional<Boolean> getBoolean(CommentedConfigurationNode node)
+    {
+        if (checkNull(node))
+            return Optional.empty();
+
+        return Optional.of(node.getBoolean());
     }
 
-    public CommentedConfigurationNode getConfig() {
-        return configurationNode;
+    /**
+     * Get double {@link Optional} value for CommentedConfigurationNode if it is not null; Otherwise return Optional.empty.
+     *
+     * @param node The node for which the double value is needed
+     * @return Optional.empty if null or Optional#of(Double) if not
+     */
+    public Optional<Double> getDouble(CommentedConfigurationNode node)
+    {
+        if (checkNull(node))
+            return Optional.empty();
+
+        return Optional.of(node.getDouble());
     }
 
-    private void create(){
-        if(!configuration.exists()) {
-            try {
-                configuration.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+    /**
+     * Get float {@link Optional} value for CommentedConfigurationNode if it is not null; Otherwise return Optional#empty.
+     *
+     * @param node The node for which the float value is needed
+     * @return Optional#empty if null or double value Optional#of(Float) if not
+     */
+    public Optional<Float> getFloat(CommentedConfigurationNode node)
+    {
+        if (checkNull(node))
+            return Optional.empty();
+
+        return Optional.of(node.getFloat());
     }
 
-    private void load(){
-        configurationLoader = HoconConfigurationLoader.builder().setFile(configuration).build();
-        try {
-            configurationNode = configurationLoader.load();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    /**
+     * Get int {@link Optional} value for CommentedConfigurationNode if it is not null; Otherwise return Optional#empty.
+     *
+     * @param node The node for which the int value is needed
+     * @return Optional#empty if null or Optional#of(Integer) if not
+     */
+    public Optional<Integer> getInt(CommentedConfigurationNode node)
+    {
+        if (checkNull(node))
+            return Optional.empty();
+
+        return Optional.of(node.getInt());
     }
 
-    public void save(){
-        try {
-            configurationLoader.save(configurationNode);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    /**
+     * Get long {@link Optional} value for CommentedConfigurationNode if it is not null; Otherwise return Optional#empty.
+     *
+     * @param node The node for which the long value is needed
+     * @return Optional#empty if null or Optional#of(Long) if not
+     */
+    public Optional<Long> getLong(CommentedConfigurationNode node)
+    {
+        if (checkNull(node))
+            return Optional.empty();
+
+        return Optional.of(node.getLong());
     }
 
+    /**
+     * Get String {@link Optional} value for CommentedConfigurationNode if it is not null; Otherwise return Optional#empty.
+     *
+     * @param node The node for which the String value is needed
+     * @return Optional#empty if null or Optional#of(String) if not
+     */
+    public Optional<String> getString(CommentedConfigurationNode node)
+    {
+        if (checkNull(node))
+            return Optional.empty();
+
+        return Optional.of(node.getString());
+    }
+
+    /**
+     * Get Object {@link Optional} value for CommentedConfigurationNode if it is not null; Otherwise return Optional#empty.
+     *
+     * @param node The node for which the Object value is needed
+     * @return Optional#empty if null or Optional#of(Object) if not
+     */
+    public Optional<Object> getValue(CommentedConfigurationNode node)
+    {
+        if (checkNull(node))
+            return Optional.empty();
+
+        return Optional.of(node.getValue());
+    }
+
+    private boolean checkNull(CommentedConfigurationNode node)
+    {
+        if (node.getValue() == null)
+            return true;
+        else
+            return false;
+    }
 }

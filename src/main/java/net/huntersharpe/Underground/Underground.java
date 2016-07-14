@@ -25,21 +25,17 @@ package net.huntersharpe.Underground;
 
 import com.google.inject.Inject;
 import net.huntersharpe.Underground.commands.*;
-import net.huntersharpe.Underground.util.ConfigManager;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
+import net.huntersharpe.Underground.util.Config;
+import net.huntersharpe.Underground.util.WorldManager;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
-import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.plugin.Plugin;
-import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
 
 
@@ -48,16 +44,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Plugin(id="underground", name="Underground", version="1.0")
 public class Underground {
 
-    private static Underground underground;
+    private WorldManager worldManager = new WorldManager();
 
-    public static Underground getUnderground(){
-        return underground;
+    protected Underground(){
+
     }
-
+    private static Underground underground;
     public List<String> ugWorlds = new ArrayList<>();
 
     @Inject
@@ -65,45 +62,45 @@ public class Underground {
     private Path configDir;
 
     @Inject
+    private Logger logger;
+
+    @Inject
     public Game game;
 
-    private ConfigManager manager = new ConfigManager();
-
+    public static Underground getUnderground(){
+        return underground;
+    }
 
     @Listener
     public void onPreInit(GamePreInitializationEvent e){
         underground = this;
-        if (!Files.exists(configDir)){
+        if(!Files.exists(configDir)){
             if (Files.exists(configDir.resolveSibling("underground"))){
                 try{
                     Files.move(configDir.resolveSibling("underground"), configDir);
-                }catch (IOException ex){
+                }catch(IOException ex){
                     ex.printStackTrace();
                 }
             }else{
                 try{
                     Files.createDirectories(configDir);
-                }catch (IOException ex){
+                }catch(IOException ex){
                     ex.printStackTrace();
                 }
             }
         }
-        for(String world : manager.getConfig()
-                .getChildrenList().toArray(new String[manager.getConfig().getChildrenList().size()])){
-            ugWorlds.add(world);
-            System.out.print("Underground world:" + world + "found in config!");
-        }
+        Config.getConfig().setup();
+        worldManager.serializeConfig();
     }
 
     @Listener
     public void onInit(GameInitializationEvent e){
-        manager.main();
         game.getCommandManager().register(this, undergroundSpec, "underground");
     }
 
     @Listener
     public void onStop(GameStoppingEvent e){
-        manager.save();
+        Config.getConfig().save();
     }
 
     CommandSpec addSpec = CommandSpec.builder()
@@ -146,12 +143,16 @@ public class Underground {
             .executor(new UndergroundCommand())
             .build();
 
-    public Path getPath(){
+    public Path getConfigDir(){
         return configDir;
     }
 
     public Game getGame(){
         return game;
+    }
+
+    public Logger getLogger(){
+        return logger;
     }
 
 }

@@ -23,7 +23,7 @@
 */
 package net.huntersharpe.Underground.commands;
 
-import net.huntersharpe.Underground.util.ConfigManager;
+import net.huntersharpe.Underground.util.Config;
 import net.huntersharpe.Underground.util.WorldManager;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
@@ -36,13 +36,11 @@ import org.spongepowered.api.text.format.TextColors;
 
 public class UGRemove implements CommandExecutor {
 
-    private ConfigManager config = new ConfigManager();
-
     private WorldManager worldManager = new WorldManager();
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        if(!config.getConfig().getNode("worlds").getChildrenList().contains(args.<String>getOne("name").get())
+        if(!Config.getConfig().get().getNode("worlds").getChildrenList().contains(args.<String>getOne("name").get())
                 || !Sponge.getServer().getWorlds().contains(args.<String>getOne("name"))){
             src.sendMessage(Text.of(TextColors.RED, args.<String>getOne("name"), " does not exist in the config or the server!"));
             return CommandResult.success();

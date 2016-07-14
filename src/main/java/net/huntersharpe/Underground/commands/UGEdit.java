@@ -24,6 +24,7 @@
 package net.huntersharpe.Underground.commands;
 
 import net.huntersharpe.Underground.UGWorld;
+import net.huntersharpe.Underground.util.Config;
 import net.huntersharpe.Underground.util.ConfigManager;
 import net.huntersharpe.Underground.util.WorldManager;
 import org.spongepowered.api.command.CommandException;
@@ -36,16 +37,14 @@ import org.spongepowered.api.text.format.TextColors;
 
 public class UGEdit implements CommandExecutor {
 
-    //TODO: Fix configuration overriding.
-
-    private ConfigManager config = new ConfigManager();
-
     private WorldManager worldManager = new WorldManager();
+
+    private static ConfigManager configManager = new ConfigManager();
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         String name = args.<String>getOne("name").get();
-        if(!config.getConfig().getNode(name).isVirtual()){
+        if(!configManager.getValue(Config.getConfig().get().getNode("worlds", name)).isPresent()){
             src.sendMessage(Text.of(TextColors.RED, name, " is not a valid UGWorld and/or does not exist in the config."));
             return CommandResult.success();
         }
@@ -53,48 +52,50 @@ public class UGEdit implements CommandExecutor {
         //Change regen-time or max size
         UGWorld world = worldManager.getUGWold(name);
         String type = args.<String>getOne("type").get();
-        //TODO: Update to switch and case.
-        if(type.equalsIgnoreCase("regen") || type.equalsIgnoreCase("size")){
-            if(!isInteger(value)){
-                src.sendMessage(Text.of(TextColors.RED, "If editing regen time or max size value must be an integer!"));
-                return CommandResult.success();
-            }
-            int n = Integer.parseInt(value);
-            if(args.hasAny("operation")){
-                src.sendMessage(Text.of(TextColors.RED, "Add/Remove operations can only be done with quests!"));
-                return CommandResult.success();
-            }
-            switch(type){
-                case "regen" :
-                    src.sendMessage(Text.of(TextColors.GRAY, "Updated regen time successfully!"));
-                    world.setRegenTime(n);
-                    config.getConfig().getNode(name + "regen-time").setValue(n);
-                    config.save();
+        switch(type){
+            case "regen":
+                if(!isInteger(value)){
+                    src.sendMessage(Text.of(TextColors.RED, "If editing regen time or max size value must be an integer!"));
+                    return CommandResult.success();
+                }
+                int n = Integer.parseInt(value);
+                if(args.hasAny("operation")){
+                    src.sendMessage(Text.of(TextColors.RED, "Add/Remove operations can only be done with quests!"));
+                    return CommandResult.success();
+                }
+                src.sendMessage(Text.of(TextColors.GRAY, "Updated regen time successfully!"));
+                world.setRegenTime(n);
+                Config.getConfig().get().getNode("worlds", name,  "regen-time").setValue(n);
+                Config.getConfig().save();
+                break;
+            case "size":
+                if(!isInteger(value)){
+                    src.sendMessage(Text.of(TextColors.RED, "If editing regen time or max size value must be an integer!"));
+                    return CommandResult.success();
+                }
+                int n1 = Integer.parseInt(value);
+                if(args.hasAny("operation")){
+                    src.sendMessage(Text.of(TextColors.RED, "Add/Remove operations can only be done with quests!"));
+                    return CommandResult.success();
+                }
+                src.sendMessage(Text.of(TextColors.GRAY, "Updated maximum size of world time successfully!"));
+                world.setMaxSize(n1);
+                Config.getConfig().get().getNode("worlds", name, "max-size").setValue(n1);
+                Config.getConfig().save();
+                break;
+            case "tgug":
+                if(!value.contains("d")){
+                    src.sendMessage(Text.of(TextColors.RED, "Value must contain the letter 'd'"));
                     break;
-                case "size":
-                    src.sendMessage(Text.of(TextColors.GRAY, "Updated maximum size of world time successfully!"));
-                    world.setMaxSize(n);
-                    config.getConfig().getNode(name + "max-size").setValue(n);
-                    config.save();
-                    break;
-            }
-            return CommandResult.success();
-        }else if(type.equalsIgnoreCase("tgug") || type.equalsIgnoreCase("quest")){
-            switch(type){
-                case "tgug":
-                    if(!value.contains("d")){
-                        src.sendMessage(Text.of(TextColors.RED, "Value must contain the letter 'd'"));
-                        break;
-                    }
-                    world.setTgug(value);
-                    src.sendMessage(Text.of(TextColors.GRAY, "Updated the time to get underground successfully!"));
-                    config.getConfig().getNode(name, "tgug").setValue(value);
-                    config.save();
-                    break;
-                case "quest":
-                    //TODO: Edit config and quest book.
-                    break;
-            }
+                }
+                world.setTgug(value);
+                src.sendMessage(Text.of(TextColors.GRAY, "Updated the time to get underground successfully!"));
+                Config.getConfig().get().getNode("worlds", name, "tgug").setValue(value);
+                Config.getConfig().save();
+                break;
+            case "quest":
+                //TODO: Add quest editing/functionality.
+                break;
         }
         return CommandResult.success();
 }
