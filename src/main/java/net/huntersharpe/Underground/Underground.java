@@ -102,7 +102,6 @@ public class Underground {
 
     @Listener
     public void onStop(GameStoppingEvent e){
-
         Config.getConfig().save();
     }
 
