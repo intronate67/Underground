@@ -23,61 +23,76 @@
 */
 package net.huntersharpe.Underground.util;
 
+import com.flowpowered.math.vector.Vector3i;
 import net.huntersharpe.Underground.UGWorld;
 import net.huntersharpe.Underground.Underground;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.WorldCreationSettings;
+import org.spongepowered.api.world.extent.Extent;
 import org.spongepowered.api.world.storage.WorldProperties;
 
 import java.util.*;
-import java.util.logging.Level;
 
 public class WorldManager {
 
     //TODO: Create worlds asynchronously
 
-    private static List<UGWorld> worlds = new ArrayList<>();
+    private static WorldManager worldManager = new WorldManager();
 
-    private Map<UUID, Date> time = new HashMap<>();
+    public WorldManager(){
+        worldManager = this;
+    }
+
+    public static WorldManager getWorldManager(){
+        return worldManager;
+    }
+
+    public static List<UGWorld> worlds = new ArrayList<>();
 
     public void createWorld(String name, int regenTime){
-        //BEGIN UPDATE
-
-        //END UPDATE
         WorldCreationSettings.Builder builder = WorldCreationSettings.builder().name(name);
-        WorldCreationSettings settings = builder.enabled(true).keepsSpawnLoaded(true).loadsOnStartup(true).build();
+        WorldCreationSettings settings = builder.generateSpawnOnLoad(false).enabled(true).keepsSpawnLoaded(true).loadsOnStartup(true).build();
         final Optional<WorldProperties> optionalProperties = Sponge.getGame().getServer().createWorldProperties(settings);
         WorldProperties properties = optionalProperties.get();
         Sponge.getServer().saveWorldProperties(properties);
         Sponge.getServer().loadWorld(name);
-        UGWorld ug = new UGWorld(name, regenTime, 50, "1d");
+        Sponge.getServer().getWorld(name).get().getProperties().setSpawnPosition(new Vector3i(0, 0, 0));
+        Location<Extent> loc = new Location<>(Sponge.getServer().getWorld(name).get().getRelativeExtentView(), 0, 0, 0);
+        UGWorld ug = new UGWorld(name, regenTime, 50, "1d", loc);
         worlds.add(ug);
         Config.getConfig().get().getNode("worlds", name, "type").setValue("original");
         Config.getConfig().get().getNode("worlds", name, "custom-world").setValue(false);
         Config.getConfig().get().getNode("worlds", name, "regen-time").setValue(regenTime);
         Config.getConfig().get().getNode("worlds", name, "tgug").setValue("1d");
         Config.getConfig().get().getNode("worlds", name, "max-size").setValue(100);
+        Config.getConfig().get().getNode("worlds", name, "spawn-x").setValue(0);
+        Config.getConfig().get().getNode("worlds", name, "spawn-y").setValue(0);
+        Config.getConfig().get().getNode("worlds", name, "spawn-z").setValue(0);
         Config.getConfig().save();
     }
 
     public void createWorld(String name, int regenTime, String customWorld){
         //TODO: Create custom underground worlds.
-        //BEGIN UPDATE
-        //END UPDATE
         WorldCreationSettings.Builder builder = WorldCreationSettings.builder().name(name);
-        WorldCreationSettings settings = builder.enabled(true).keepsSpawnLoaded(true).loadsOnStartup(true).build();
+        WorldCreationSettings settings = builder.generateSpawnOnLoad(false).enabled(true).keepsSpawnLoaded(true).loadsOnStartup(true).build();
         final Optional<WorldProperties> optionalProperties = Sponge.getGame().getServer().createWorldProperties(settings);
         WorldProperties properties = optionalProperties.get();
         Sponge.getServer().saveWorldProperties(properties);
         Sponge.getServer().loadWorld(name);
-        UGWorld ug = new UGWorld(name, regenTime, 50, "1d");
+        Sponge.getServer().getWorld(name).get().getProperties().setSpawnPosition(new Vector3i(0, 0, 0));
+        Location<Extent> loc = new Location<>(Sponge.getServer().getWorld(name).get().getRelativeExtentView(), 0, 0, 0);
+        UGWorld ug = new UGWorld(name, regenTime, 50, "1d", loc);
         worlds.add(ug);
         Config.getConfig().get().getNode("worlds", name, "type").setValue("custom");
         Config.getConfig().get().getNode("worlds", name, "custom-world").setValue(customWorld);
         Config.getConfig().get().getNode("worlds", name, "regen-time").setValue(regenTime);
         Config.getConfig().get().getNode("worlds", name, "tgug").setValue("1d");
         Config.getConfig().get().getNode("worlds", name, "max-size").setValue(100);
+        Config.getConfig().get().getNode("worlds", name, "spawn-x").setValue(0);
+        Config.getConfig().get().getNode("worlds", name, "spawn-y").setValue(0);
+        Config.getConfig().get().getNode("worlds", name, "spawn-z").setValue(0);
         Config.getConfig().save();
     }
 
@@ -91,37 +106,49 @@ public class WorldManager {
 
     }
 
-    public void setTime(UUID pUUID){
-        //TODO: Below is not best way to compare, might change to in-game world time.
-        time.put(pUUID, Calendar.getInstance().getTime());
-    }
-
-    public UGWorld getUGWold(String name){
+    public Optional<UGWorld> getUGWold(String name){
         for(UGWorld ug : worlds) {
             if (ug.getName().equals(name)) {
-                return ug;
+                return Optional.of(ug);
             }
         }
         return null;
     }
-    //TODO: Fix this.
     public void serializeConfig(){
-        if(!Config.getConfig().get().getNode("worlds").getChildrenList().isEmpty()){
-            String[] ugworlds = Config.getConfig().get().getNode("worlds").getChildrenList().toArray(new String[Config.getConfig().get().getChildrenList().size()]);
-            for(int i = 0; i < Config.getConfig().get().getChildrenList().size(); i++){
-                String name = ugworlds[i];
+        //Loading worlds
+        List<String> names = new ArrayList<>();
+        Map<Object, ? extends CommentedConfigurationNode> map = Config.getConfig().get().getNode("worlds").getChildrenMap();
+        if(map.keySet().isEmpty()){
+            Underground.getUnderground().getLogger().info("No underground worlds were found inside the config!");
+            return;
+        }else{
+            for(String name : map.keySet().toArray(new String[map.keySet().size()])){
                 int regenTime = Config.getConfig().get().getNode("worlds", name, "regen-time").getInt();
                 int maxSize = Config.getConfig().get().getNode("worlds", name, "max-size").getInt();
                 String tgug = Config.getConfig().get().getNode("worlds", name, "tgug").getString();
-                UGWorld ug = new UGWorld(name, regenTime, maxSize, tgug);
+                Location<org.spongepowered.api.world.extent.Extent> spawn = new Location<>(
+                        Underground.getUnderground().getGame().getServer().getWorld(name).get().getRelativeExtentView(),
+                        Config.getConfig().get().getNode("worlds", name, "spawn-x").getDouble(),
+                        Config.getConfig().get().getNode("worlds", name, "spawn-y").getDouble(),
+                        Config.getConfig().get().getNode("worlds", name, "spawn-z").getDouble()
+                );
+                UGWorld ug = new UGWorld(name, regenTime, maxSize, tgug, spawn);
                 worlds.add(ug);
-                Underground.getUnderground().getLogger().log(Level.INFO, "Underground world: " + name + " was found in the config");
+                names.add(name);
             }
-            return;
-        }else{
-            Underground.getUnderground().getLogger().log(Level.INFO, "No underground worlds were found inside the config!");
-            System.out.println(Config.getConfig().get().getNode("worlds").getChildrenList().size());
-            return;
+            Underground.getUnderground().getLogger().info("Underground worlds: " + names.toString() + " we found in the config!");
+            //Loading Players
+            Map<Object, ? extends CommentedConfigurationNode> pMap = Config.getConfig().get().getNode("players").getChildrenMap();
+            if(pMap.keySet().isEmpty()){
+                Underground.getUnderground().getLogger().info("No player data found in config!");
+                return;
+            }else{
+                for(String name : pMap.keySet().toArray(new String[pMap.keySet().size()])){
+                    getUGWold(Config.getConfig().get().getNode("players", name, "ugworld").toString()).get().getPlayers().add(Sponge.getServer().getPlayer(name).get().getUniqueId());
+                    PlayerManager.getPlayerManager().players.put(Sponge.getServer().getPlayer(name).get().getUniqueId(), Config.getConfig().get().getNode("players", name, "ugworld").toString());
+                }
+                Underground.getUnderground().getLogger().info("Loaded players into maps.");
+            }
         }
     }
 }

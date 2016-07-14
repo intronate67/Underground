@@ -32,6 +32,8 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.extent.Extent;
 
 public class UGAdd implements CommandExecutor {
 
@@ -66,7 +68,12 @@ public class UGAdd implements CommandExecutor {
             }
             //Type custom
             String worldName = args.<String>getOne("world-name").get();
-            worldManager.createWorld(name, regenTime, worldName);
+            try{
+                worldManager.createWorld(name, regenTime, worldName);
+            }catch(Exception e){
+                e.printStackTrace();
+                src.sendMessage(Text.of(TextColors.RED, "Could not create underground world successfully."));
+            }
             src.sendMessage(Text.of(TextColors.GREEN, "Underground world", name, " has been created!"));
             return CommandResult.success();
         }

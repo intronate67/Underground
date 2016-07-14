@@ -37,8 +37,6 @@ import org.spongepowered.api.text.format.TextColors;
 
 public class UGEdit implements CommandExecutor {
 
-    private WorldManager worldManager = new WorldManager();
-
     private static ConfigManager configManager = new ConfigManager();
 
     @Override
@@ -50,13 +48,11 @@ public class UGEdit implements CommandExecutor {
         }
         String value = args.<String>getOne("value").get();
         //Change regen-time or max size
-        UGWorld world = worldManager.getUGWold(name);
+        UGWorld world = WorldManager.getWorldManager().getUGWold(name).get();
         String type = args.<String>getOne("type").get();
         switch(type){
             case "regen":
                 if(!isInteger(value)){
-                    src.sendMessage(Text.of(TextColors.RED, "If editing regen time or max size value must be an integer!"));
-                    return CommandResult.success();
                 }
                 int n = Integer.parseInt(value);
                 if(args.hasAny("operation")){

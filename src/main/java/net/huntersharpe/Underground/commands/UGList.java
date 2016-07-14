@@ -23,15 +23,87 @@
 */
 package net.huntersharpe.Underground.commands;
 
+import net.huntersharpe.Underground.util.Config;
+import net.huntersharpe.Underground.util.WorldManager;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class UGList implements CommandExecutor {
+
+    private WorldManager worldManager = new WorldManager();
+
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+        //View list of all UGWorlds
+        List<String> worlds = new ArrayList<>();
+        Map<Object, ? extends CommentedConfigurationNode> map = Config.getConfig().get().getNode("worlds").getChildrenMap();
+        if(!args.hasAny("name")){
+            if(map.keySet().isEmpty()){
+                src.sendMessage(Text.of(
+                        TextColors.GRAY,
+                        "--------[",
+                        TextColors.BLUE,
+                        "Underground",
+                        TextColors.GRAY,
+                        "]--------\n",
+                        TextColors.BLUE,
+                        "Empty"
+                ));
+                return CommandResult.success();
+            }
+            for(Object name : map.keySet().toArray()){
+                worlds.add(name.toString());
+            }
+            src.sendMessage(Text.of(map.keySet().toString()));
+            src.sendMessage(Text.of(
+                    TextColors.GRAY,
+                    "--------[",
+                    TextColors.BLUE,
+                    "Underground",
+                    TextColors.GRAY,
+                    "]--------\n",
+                    TextColors.BLUE,
+                    Text.of(map.keySet().toString())
+            ));
+            return CommandResult.success();
+        }
+        String name = args.<String>getOne("name").get();
+        if(!map.keySet().contains(name)){
+            src.sendMessage(Text.of(TextColors.RED, "Underground world: ", name, " does not exist in the config!"));
+            return CommandResult.success();
+        }else{
+            String cw = Config.getConfig().get().getNode("worlds", name, "custom-world").getString();
+            String maxSize = String.valueOf(Config.getConfig().get().getNode("worlds", name, "max-size").getValue());
+            String regenTime = String.valueOf(Config.getConfig().get().getNode("worlds", name, "regen-time").getValue());
+            String tgug = Config.getConfig().get().getNode("worlds", name, "tgug").getString();
+            String type = Config.getConfig().get().getNode("worlds", name, "type").getString();
+            src.sendMessage(Text.of(
+                    TextColors.GRAY,
+                    "--------[",
+                    TextColors.BLUE,
+                    "Underground",
+                    TextColors.GRAY,
+                    "]--------\n",
+                    TextColors.BLUE,
+                    "Name: ", name, "\n",
+                    "Custom World: ", cw, "\n",
+                    "Maximum Size: ", maxSize, "\n",
+                    "Regen Time: ", regenTime, "\n",
+                    "T.G.U.G: ", tgug, "\n",
+                    "Type: ", type
+            ));
+        }
         return CommandResult.success();
     }
 }

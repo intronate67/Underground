@@ -23,6 +23,8 @@
 */
 package net.huntersharpe.Underground;
 
+import org.spongepowered.api.world.Location;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -33,13 +35,15 @@ public class UGWorld {
     private int regenTime;
     private int maxSize;
     private String tgug;
-    private  List<UUID> players = new ArrayList<>();
+    private Location spawn;
+    private List<UUID> players = new ArrayList<>();
 
-    public UGWorld(String name, int regenTime, int maxSize, String tgug){
+    public UGWorld(String name, int regenTime, int maxSize, String tgug, Location spawn){
         this.name = name;
         this.regenTime = regenTime;
         this.maxSize = maxSize;
         this.tgug = tgug;
+        this.spawn = spawn;
     }
 
     public String getName(){
@@ -61,6 +65,8 @@ public class UGWorld {
     public List<UUID> getPlayers(){
         return this.players;
     }
+
+    public Location getSpawn() { return this.spawn; }
 
     public void setRegenTime(int regenTime){
         this.regenTime = regenTime;

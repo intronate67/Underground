@@ -40,7 +40,7 @@ public class Config implements Configurable{
 
     private Config()
     {
-        ;
+
     }
 
     public static Config getConfig()

@@ -23,15 +23,45 @@
 */
 package net.huntersharpe.Underground.commands;
 
+import net.huntersharpe.Underground.util.Config;
+import net.huntersharpe.Underground.util.PlayerManager;
+import net.huntersharpe.Underground.util.WorldManager;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 
 public class UGJoin implements CommandExecutor {
+
+    //TODO: Scheduler
+
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+        if(!(src instanceof Player)){
+            src.sendMessage(Text.of(TextColors.RED, "Only players can join underground worlds!"));
+            return CommandResult.success();
+        }
+        Player player = (Player)src;
+        String name = args.<String>getOne("name").get();
+        if(!WorldManager.worlds.contains(name) || WorldManager.worlds.isEmpty()){
+            src.sendMessage(Text.of(TextColors.RED, "No underground world by that name exists!"));
+            return CommandResult.success();
+        }
+        if(WorldManager.getWorldManager().getUGWold(name).get().getPlayers().contains(player.getUniqueId())
+                || Config.getConfig().get().getNode("players", player.getName(), "ugworld").getValue().equals(name)){
+            player.sendMessage(Text.of(TextColors.RED, "You already are in that world!"));
+            return CommandResult.success();
+        }
+        try{
+            PlayerManager.getPlayerManager().players.put(player.getUniqueId(), name);
+            PlayerManager.getPlayerManager().joinWorld(player, name);
+        }catch(Exception e){
+            player.sendMessage(Text.of(TextColors.RED, "Error while joining world, contact an administrator."));
+        }
         return CommandResult.success();
     }
 }

@@ -49,6 +49,8 @@ import java.util.logging.Logger;
 @Plugin(id="underground", name="Underground", version="1.0")
 public class Underground {
 
+    //TODO
+
     private WorldManager worldManager = new WorldManager();
 
     protected Underground(){
@@ -100,6 +102,7 @@ public class Underground {
 
     @Listener
     public void onStop(GameStoppingEvent e){
+
         Config.getConfig().save();
     }
 
@@ -131,7 +134,7 @@ public class Underground {
             .executor(new UGJoin())
             .build();
     CommandSpec listSpec = CommandSpec.builder()
-            .arguments(GenericArguments.optional(GenericArguments.integer(Text.of("page"))))
+            .arguments(GenericArguments.optional(GenericArguments.string(Text.of("name"))))
             .executor(new UGList())
             .build();
     CommandSpec undergroundSpec = CommandSpec.builder()
