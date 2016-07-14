@@ -1,2 +1,2 @@
-# Underground
+# Underground [![Build Status](https://travis-ci.org/intronate67/Underground.svg?branch=master)](https://travis-ci.org/intronate67/Underground)
 Sponge plugin for minecraft to create and interesting survival experience.
